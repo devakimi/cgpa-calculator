@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naliss Advanced CGPA Calculator</title>
+    <style>
+        :root {
+            --primary-color: #d9b43d;
+            --primary-dark: #c19f2c;
+            --primary-light: #e4c76a;
+            --text-dark: #2d2810;
+            --bg-light: #fdfbf6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .header h1 {
+            color: var(--primary-dark);
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 10px;
+        }
+
+        .semester-container {
+            background: var(--bg-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .course-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .course-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        input, 
+        select, 
+        .credits {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--primary-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(217, 180, 61, 0.2);
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .results {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            border: 2px solid var(--primary-color);
+            margin-bottom: 0;
+            padding-bottom: 20px;
+        }
+
+        .cgpa-display {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin: 20px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-light);
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 29px;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .semester-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .semester-tab {
+            flex: 1;
+            padding: 15px;
+            background: var(--bg-light);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .semester-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .semester-content {
+            display: none;
+        }
+
+        .semester-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .commentary-section {
+            margin-top: 20px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(217, 180, 61, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .main-comment {
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .trend-analysis {
+            color: var(--text-dark);
+            margin: 20px auto;
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--primary-light);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(-50%);
+            margin-left: 50%;
+            animation: slideIn 0.5s ease;
+        }
+
+        .trend-positive {
+            background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            border-color: rgba(52, 199, 89, 0.3);
+            color: #2d7a44;
+        }
+
+        .trend-negative {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            border-color: rgba(255, 59, 48, 0.3);
+            color: #c1453e;
+        }
+
+        .trend-neutral {
+            background: linear-gradient(135deg, rgba(217, 180, 61, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            border-color: rgba(217, 180, 61, 0.3);
+        }
+
+        .recommendations {
+            margin-top: 20px;
+        }
+
+        .recommendations h4 {
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .recommendations h4:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .recommendations ul {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .recommendations li {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.5) 100%);
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(217, 180, 61, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .recommendations li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendations li:before {
+            content: "✦";
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .improvement-advice {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Remove spinner arrows for number input */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .credits:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(217, 180, 61, 0.2);
+        }
+
+        .error-message {
+            color: #ff4757;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        /* Enhanced responsive styles */
+        @media (max-width: 768px) {
+            .recommendations ul {
+                grid-template-columns: 1fr;
+            }
+            
+            .commentary-section {
+                padding: 15px;
+            }
+            
+            .main-comment {
+                font-size: 1.1rem;
+            }
+            
+            .trend-analysis {
+                font-size: 0.95rem;
+                padding: 8px 15px;
+                width: 90%;
+                max-width: 300px;
+            }
+            
+            .recommendations li {
+                padding: 15px;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Preferences toggle styles */
+        .preferences-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .preferences-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+
+        .preferences-toggle i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .preferences-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+            z-index: 999;
+            width: 320px;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .preferences-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .preferences-panel h4 {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preferences-panel h4::before {
+            content: '⚙️';
+            font-size: 1.2em;
+        }
+
+        .preference-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .preference-item:last-child {
+            border-bottom: none;
+        }
+
+        .preference-item .preference-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .preference-item .preference-title {
+            font-weight: 500;
+        }
+
+        .preference-item .preference-description {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Toggle switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .recommendation-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .prompt-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .prompt-content h3 {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .prompt-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .prompt-buttons button {
+            padding: 10px 30px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-yes {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-no {
+            background: #f1f1f1;
+            color: var(--text-dark);
+        }
+
+        .btn-yes:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-no:hover {
+            background: #e5e5e5;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animation for removing commentary */
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+
+        /* Animation for adding commentary */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .course-name-input {
+            text-transform: uppercase;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"].course-name-input::placeholder {
+            text-transform: none;
+            color: #999;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"].course-name-input {
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"].course-name-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(217, 180, 61, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1>CGPA Calculator</h1>
+            <p>Calculate your semester GPA</p>
+        </div>
+
+        <div class="semester-tabs">
+            <div class="semester-tab active" onclick="switchSemester('harmattan')">
+                Harmattan Semester
+            </div>
+            <div class="semester-tab" onclick="switchSemester('rain')">
+                Rain Semester
+            </div>
+        </div>
+
+        <div id="harmattan-semester" class="semester-content active">
+            <div class="semester-container">
+                <h3>Harmattan Semester Courses</h3>
+                <div id="harmattan-courses">
+                    <!-- Courses will be added here -->
+                </div>
+                <button class="btn" onclick="addCourse('harmattan-courses')">
+                    Add Course
+                </button>
+            </div>
+        </div>
+
+        <div id="rain-semester" class="semester-content">
+            <div class="semester-container">
+                <h3>Rain Semester Courses</h3>
+                <div id="rain-courses">
+                    <!-- Courses will be added here -->
+                </div>
+                <button class="btn" onclick="addCourse('rain-courses')">
+                    Add Course
+                </button>
+            </div>
+        </div>
+
+        <button class="btn" onclick="calculateCGPA()">Calculate CGPA</button>
+
+        <div class="results">
+            <h2>Your Results</h2>
+            <div class="cgpa-display" id="cgpa">0.00</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCredits">0</div>
+                    <div class="stat-label">Total Credits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="harmattanGPA">0.00</div>
+                    <div class="stat-label">Harmattan GPA</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="rainGPA">0.00</div>
+                    <div class="stat-label">Rain GPA</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="preferences-toggle" onclick="togglePreferences()">
+        <i>⚙️</i>
+    </div>
+
+    <div class="preferences-panel" id="preferencesPanel">
+        <h4>Calculator Settings</h4>
+        
+        <div class="preference-item">
+            <div class="preference-label">
+                <span class="preference-title">Show Recommendations</span>
+                <span class="preference-description">Display AI-powered study tips</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleShowRecommendations" onchange="Settings.preferences.showRecommendations = this.checked; Settings.save()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div class="preference-label">
+                <span class="preference-title">Trend Analysis</span>
+                <span class="preference-description">Show semester performance trends</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleShowTrendAnalysis" onchange="Settings.preferences.showTrendAnalysis = this.checked; Settings.save()">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        function switchSemester(semester) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.semester-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.semester-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Add active class to selected semester
+            document.querySelector(`[onclick="switchSemester('${semester}')"]`).classList.add('active');
+            document.getElementById(`${semester}-semester`).classList.add('active');
+        }
+
+        function addCourse(containerId) {
+            const container = document.getElementById(containerId);
+            const courseRow = document.createElement('div');
+            courseRow.className = 'course-row fade-in';
+            courseRow.innerHTML = `
+                <div class="input-group">
+                    <label>Course Name</label>
+                    <input type="text" 
+                           placeholder="Enter course name" 
+                           onInput="formatCourseName(this)"
+                           class="course-name-input"
+                           required>
+                </div>
+                <div class="input-group">
+                    <label>Grade</label>
+                    <select class="grade">
+                        <option value="5">A</option>
+                        <option value="4">B</option>
+                        <option value="3">C</option>
+                        <option value="2">D</option>
+                        <option value="1">E</option>
+                        <option value="0">F</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Credits</label>
+                    <input type="number" 
+                           class="credits" 
+                           placeholder="1-6" 
+                           min="1" 
+                           max="6" 
+                           oninput="validateCredits(this)"
+                           onkeypress="return validateNumberInput(event)"
+                           required>
+                    <span class="error-message"></span>
+                </div>
+                <button class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(courseRow);
+        }
+
+        // Validate number input
+        function validateNumberInput(event) {
+            // Allow only numbers (0-9)
+            if (event.charCode < 48 || event.charCode > 57) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        // Validate credits range
+        function validateCredits(input) {
+            const value = parseInt(input.value);
+            const errorMessage = input.parentElement.querySelector('.error-message');
+            
+            // Clear any non-numeric characters
+            input.value = input.value.replace(/[^0-9]/g, '');
+            
+            // Validate range
+            if (value < 1 || value > 6) {
+                errorMessage.textContent = 'Credits must be between 1 and 6';
+                input.classList.add('error');
+            } else {
+                errorMessage.textContent = '';
+                input.classList.remove('error');
+            }
+            
+            // Ensure the value doesn't exceed 6
+            if (value > 6) {
+                input.value = '6';
+            }
+            
+            // Ensure the value isn't less than 1
+            if (value < 1 && input.value !== '') {
+                input.value = '1';
+            }
+        }
+
+        function calculateSemesterGPA(containerId) {
+            let totalPoints = 0;
+            let totalCredits = 0;
+            
+            document.querySelectorAll(`#${containerId} .course-row`).forEach(row => {
+                const grade = parseFloat(row.querySelector('.grade').value);
+                const credits = parseFloat(row.querySelector('.credits').value);
+
+                if (!isNaN(grade) && !isNaN(credits)) {
+                    totalPoints += grade * credits;
+                    totalCredits += credits;
+                }
+            });
+
+            return {
+                gpa: totalCredits > 0 ? totalPoints / totalCredits : 0,
+                credits: totalCredits
+            };
+        }
+
+        function getPerformanceComment(cgpa, semesterGPAs) {
+            const comments = {
+                excellent: "Outstanding performance! 🌟",
+                veryGood: "Great work! Keep it up! 👏",
+                good: "Solid performance! 📚",
+                fair: "You're making progress! 🎯",
+                needsImprovement: "Keep pushing forward! 💪"
+            };
+
+            const recommendations = {
+                excellent: [
+                    "Consider mentoring others",
+                    "Explore research opportunities",
+                    "Take on leadership roles"
+                ],
+                veryGood: [
+                    "Maintain study habits",
+                    "Join academic competitions",
+                    "Share knowledge with peers"
+                ],
+                good: [
+                    "Create study schedules",
+                    "Join study groups",
+                    "Practice past questions"
+                ],
+                fair: [
+                    "Seek academic support",
+                    "Review study techniques",
+                    "Use office hours"
+                ],
+                needsImprovement: [
+                    "Meet with academic advisor",
+                    "Get a study buddy",
+                    "Break topics into chunks"
+                ]
+            };
+
+            let feedback = {
+                comment: "",
+                recommendations: [],
+                trend: null
+            };
+
+            // Only calculate trend if both semesters have valid GPAs
+            const [harmattan, rain] = semesterGPAs;
+            if (harmattan > 0 && rain > 0) {  // Check if both semesters have grades
+                const difference = ((rain - harmattan) / harmattan * 100).toFixed(1);
+                if (rain > harmattan) {
+                    feedback.trend = {
+                        text: `Improved by ${difference}%`,
+                        icon: '📈',
+                        class: 'trend-positive'
+                    };
+                } else if (rain < harmattan) {
+                    feedback.trend = {
+                        text: `Decreased by ${Math.abs(difference)}%`,
+                        icon: '📉',
+                        class: 'trend-negative'
+                    };
+                }
+            }
+
+            // Generate feedback based on CGPA
+            if (cgpa >= 4.0) {
+                feedback.comment = comments.excellent;
+                feedback.recommendations = recommendations.excellent;
+            } else if (cgpa >= 3.0) {
+                feedback.comment = comments.veryGood;
+                feedback.recommendations = recommendations.veryGood;
+            } else if (cgpa >= 2.5) {
+                feedback.comment = comments.good;
+                feedback.recommendations = recommendations.good;
+            } else if (cgpa >= 2.0) {
+                feedback.comment = comments.fair;
+                feedback.recommendations = recommendations.fair;
+            } else {
+                feedback.comment = comments.needsImprovement;
+                feedback.recommendations = recommendations.needsImprovement;
+            }
+
+            return feedback;
+        }
+
+        // Update the calculateCGPA function to include the commentary
+        function calculateCGPA() {
+            const harmattan = calculateSemesterGPA('harmattan-courses');
+            const rain = calculateSemesterGPA('rain-courses');
+
+            const totalCredits = harmattan.credits + rain.credits;
+            const cgpa = totalCredits > 0 ? 
+                ((harmattan.gpa * harmattan.credits) + (rain.gpa * rain.credits)) / totalCredits : 
+                0;
+
+            // Update basic displays first
+            document.getElementById('cgpa').textContent = cgpa.toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits;
+            document.getElementById('harmattanGPA').textContent = harmattan.gpa.toFixed(2);
+            document.getElementById('rainGPA').textContent = rain.gpa.toFixed(2);
+
+            // Show recommendation popup
+            showRecommendationPrompt(cgpa, [harmattan.gpa, rain.gpa]);
+        }
+
+        function showRecommendationPrompt(cgpa, semesterGPAs) {
+            const promptHTML = `
+                <div class="recommendation-prompt">
+                    <div class="prompt-content">
+                        <h3>Would you like to see recommendations?</h3>
+                        <div class="prompt-buttons">
+                            <button onclick="handleRecommendationChoice(true, ${cgpa}, [${semesterGPAs}])" class="btn-yes">Yes</button>
+                            <button onclick="handleRecommendationChoice(false)" class="btn-no">No</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing prompt if any
+            const existingPrompt = document.querySelector('.recommendation-prompt');
+            if (existingPrompt) {
+                existingPrompt.remove();
+            }
+
+            document.body.insertAdjacentHTML('beforeend', promptHTML);
+        }
+
+        function handleRecommendationChoice(showRecommendations, cgpa, semesterGPAs) {
+            // Remove the prompt
+            const prompt = document.querySelector('.recommendation-prompt');
+            if (prompt) {
+                prompt.remove();
+            }
+
+            // Find existing commentary section
+            const existingCommentary = document.querySelector('.commentary-section');
+            
+            // Always remove existing commentary with animation
+            if (existingCommentary) {
+                existingCommentary.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => {
+                    existingCommentary.remove();
+                }, 300);
+            }
+
+            // Only add new commentary if showRecommendations is true
+            if (showRecommendations) {
+                const feedback = getPerformanceComment(cgpa, semesterGPAs);
+                const commentaryHTML = `
+                    <div class="commentary-section">
+                        <div class="main-comment">
+                            ${feedback.comment}
+                        </div>
+                        
+                        ${feedback.trend ? `
+                            <div class="trend-analysis ${feedback.trend.class}">
+                                <span class="trend-icon">${feedback.trend.icon}</span>
+                                <span class="trend-text">${feedback.trend.text}</span>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="recommendations">
+                            <h4>AI Recommendations</h4>
+                            <ul>
+                                ${feedback.recommendations.map(rec => `
+                                    <li>${rec}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+
+                // Add new commentary after removal animation completes
+                setTimeout(() => {
+                    const resultsDiv = document.querySelector('.results');
+                    resultsDiv.insertAdjacentHTML('beforeend', commentaryHTML);
+                }, existingCommentary ? 300 : 0);
+            }
+        }
+
+        function animateNumber(elementId, start, end) {
+            const element = document.getElementById(elementId);
+            const duration = 1000;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const value = start + (end - start) * progress;
+                element.textContent = elementId === 'totalCredits' ? 
+                    Math.round(value) : 
+                    value.toFixed(2);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Add initial course rows for both semesters
+        addCourse('harmattan-courses');
+        addCourse('rain-courses');
+
+        // Add this new function to handle course name formatting
+        function formatCourseName(input) {
+            // Convert all text to uppercase
+            input.value = input.value.toUpperCase();
+        }
+
+        // Enhanced settings management
+        const Settings = {
+            preferences: {
+                showRecommendations: true,
+                showTrendAnalysis: true,
+                showGradePoints: false,
+                autoCalculate: true,
+                darkMode: false
+            },
+
+            init() {
+                // Load saved preferences
+                const savedPrefs = localStorage.getItem('cgpaCalculatorPrefs');
+                if (savedPrefs) {
+                    this.preferences = { ...this.preferences, ...JSON.parse(savedPrefs) };
+                }
+                this.applySettings();
+                this.updateToggleStates();
+            },
+
+            save() {
+                localStorage.setItem('cgpaCalculatorPrefs', JSON.stringify(this.preferences));
+                this.applySettings();
+            },
+
+            applySettings() {
+                // Apply dark mode if enabled
+                document.body.classList.toggle('dark-mode', this.preferences.darkMode);
+                
+                // Update calculator behavior
+                if (this.preferences.autoCalculate) {
+                    this.enableAutoCalculate();
+                }
+            },
+
+            updateToggleStates() {
+                // Update all toggle switches to match current preferences
+                Object.entries(this.preferences).forEach(([key, value]) => {
+                    const toggle = document.querySelector(`#toggle${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                    if (toggle) toggle.checked = value;
+                });
+            }
+        };
+    </script>
+</body>
+</html>
